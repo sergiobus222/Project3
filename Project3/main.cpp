@@ -57,63 +57,77 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
 {
     CURL* curl;
     CURLcode result;
+    int currentPage = 1;
+    int totalPages = 20;
     int code(0);
     curl_global_init(CURL_GLOBAL_DEFAULT);
-
-    curl = curl_easy_init();
-    if (curl) {
-
-        curl_easy_setopt(curl, CURLOPT_URL, "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=NqBR3T4rTRFVvTE0DkvasKs6b63RwqQDaFAUeTh5&query=Orange&dataType=Branded&pageSize=1000");
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &jsonData);
-        result = curl_easy_perform(curl);
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
-        if (result != CURLE_OK) {
-            std::cerr << "Error during curl request: "
-                << curl_easy_strerror(result) << std::endl;
+    string inputURL;
+    inputURL = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=NqBR3T4rTRFVvTE0DkvasKs6b63RwqQDaFAUeTh5&query=";
+    for (int i = 0; i < input.length(); i++) {
+        if (input.at(i) != ' ') {
+            inputURL = inputURL + input.at(i);
         }
-        curl_easy_cleanup(curl);
+        else {
+            inputURL = inputURL + "%20";
+        }
     }
-    else {
-        std::cerr << "Error initializing curl." << std::endl;
-    }
-    curl_global_cleanup();
-    Json::Value jsonFile;
-    Json::CharReaderBuilder reader;
-    string s;
-    if (Json::parseFromStream(reader, jsonData, &jsonFile, &s))
+    string inputEnd = "&dataType=Branded&pageSize=5&pageNumber=";
+    inputURL = inputURL + inputEnd;
+    while (currentPage != totalPages)
     {
-        cout << "Total Hits: " << jsonFile["totalHits"] << std::endl;
-        cout << "Current Page: " << jsonFile["currentPage"] << std::endl;
-        cout << "Total Pages:" << jsonFile["totalPages"] << std::endl;
-        auto foods = jsonFile["foods"];
-        for (auto it = foods.begin(); it != foods.end(); it++)
-        {
-            Food* food = new Food();
-            food->fdcID = (*it)["fdcId"].asString();
-            food->name = (*it)["description"].asString();
-            food->brand = (*it)["brandOwner"].asString();
-            food->ingredients = (*it)["ingredients"].asString();
-            auto nutrients = (*it)["foodNutrients"];
-            for (auto i = nutrients.begin(); i != nutrients.end(); i++)
-            {
-                food->insertNutrient((*i)["nutrientId"].asInt(), (*i)["nutrientName"].asString(), (*i)["value"].asFloat(), (*i)["unitName"].asString());
+        inputURL += to_string(currentPage);
+        cout << inputURL;
+        curl = curl_easy_init();
+        if (curl) {
+            curl_easy_setopt(curl, CURLOPT_URL, inputURL.c_str());
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &jsonData);
+            result = curl_easy_perform(curl);
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
+            if (result != CURLE_OK) {
+                std::cerr << "Error during curl request: "
+                    << curl_easy_strerror(result) << std::endl;
             }
-            _foods[input].push_back(food);
+            curl_easy_cleanup(curl);
         }
-        vector<Food*>::iterator j;
-        for (j = _foods[input].begin(); j != _foods[input].end(); j++)
+        else {
+            std::cerr << "Error initializing curl." << std::endl;
+        }
+        curl_global_cleanup();
+        Json::Value jsonFile;
+        Json::CharReaderBuilder reader;
+        string s;
+        if (Json::parseFromStream(reader, jsonData, &jsonFile, &s))
         {
-            cout << (*j)->name << endl;
-            cout << (*j)->brand << endl;
-            for (auto k = (*j)->nutrients.begin(); k != (*j)->nutrients.end(); k++)
+            cout << "Total Hits: " << jsonFile["totalHits"] << std::endl;
+            cout << "Current Page: " << jsonFile["currentPage"] << std::endl;
+            //totalPages = jsonFile["totalPages"].asInt() + 1;
+            auto foods = jsonFile["foods"];
+            for (auto it = foods.begin(); it != foods.end(); it++)
             {
-                cout << k->second->value << endl;
-                cout << k->second->unit << endl;
+                Food* food = new Food();
+                food->fdcID = (*it)["fdcId"].asString();
+                food->name = (*it)["description"].asString();
+                food->brand = (*it)["brandOwner"].asString();
+                food->ingredients = (*it)["ingredients"].asString();
+                auto nutrients = (*it)["foodNutrients"];
+                for (auto i = nutrients.begin(); i != nutrients.end(); i++)
+                {
+                    food->insertNutrient((*i)["nutrientId"].asInt(), (*i)["nutrientName"].asString(), (*i)["value"].asFloat(), (*i)["unitName"].asString());
+                }
+                _foods[input].push_back(food);
+                cout << food->name;
             }
         }
-    }
+        jsonData.clear();
+        for (int i = 0; i < to_string(currentPage).size(); i++)
+        {
+            inputURL.pop_back();
+        }
+        currentPage++;
+        //cout << to_string(currentPage).size();
+    }  
 }
 
 int main()
