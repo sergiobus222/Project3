@@ -27,7 +27,6 @@ class Food
 public:
     struct Nutrient
     {
-        string name;
         float value;
         string unit;
     };
@@ -41,8 +40,7 @@ public:
 
 void Food::insertNutrient(int _ID, string _name, float _value, string _unit)
 {
-    Nutrient* nutrient = new Nutrient;
-    nutrient->name = name;
+    Nutrient* nutrient = new Nutrient();
     nutrient->value = _value;
     nutrient->unit = _unit;
     if (_ID == 1003) nutrients["protein"] = nutrient;
@@ -55,7 +53,7 @@ void Food::insertNutrient(int _ID, string _name, float _value, string _unit)
     else if (_ID == 1258) nutrients["saturated fat"] = nutrient;
 }
 
-void LoadData(stringstream& jsonData, unordered_map<string, Food*>& foods)
+void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foods, string input)
 {
     CURL* curl;
     CURLcode result;
@@ -65,7 +63,7 @@ void LoadData(stringstream& jsonData, unordered_map<string, Food*>& foods)
     curl = curl_easy_init();
     if (curl) {
 
-        curl_easy_setopt(curl, CURLOPT_URL, "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=NqBR3T4rTRFVvTE0DkvasKs6b63RwqQDaFAUeTh5&query=Orange");
+        curl_easy_setopt(curl, CURLOPT_URL, "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=NqBR3T4rTRFVvTE0DkvasKs6b63RwqQDaFAUeTh5&query=Orange&dataType=Branded&pageSize=1000");
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &jsonData);
@@ -97,18 +95,22 @@ void LoadData(stringstream& jsonData, unordered_map<string, Food*>& foods)
             food->name = (*it)["description"].asString();
             food->brand = (*it)["brandOwner"].asString();
             food->ingredients = (*it)["ingredients"].asString();
-            food->name.erase(remove(food->name.begin(), food->name.end(), '"'), food->name.end());
-            food->brand.erase(remove(food->brand.begin(), food->brand.end(), '"'), food->brand.end());
-            food->ingredients.erase(remove(food->ingredients.begin(), food->ingredients.end(), '"'), food->ingredients.end());
-            auto nutrients = jsonFile["foodNutrients"];
-            unordered_map<string, Food::Nutrient*>::iterator j;
+            auto nutrients = (*it)["foodNutrients"];
             for (auto i = nutrients.begin(); i != nutrients.end(); i++)
             {
                 food->insertNutrient((*i)["nutrientId"].asInt(), (*i)["nutrientName"].asString(), (*i)["value"].asFloat(), (*i)["unitName"].asString());
-                for (j = food->nutrients.begin(); j != food->nutrients.end(); j++)
-                {
-                    cout << j->second << endl;
-                }
+            }
+            _foods[input].push_back(food);
+        }
+        vector<Food*>::iterator j;
+        for (j = _foods[input].begin(); j != _foods[input].end(); j++)
+        {
+            cout << (*j)->name << endl;
+            cout << (*j)->brand << endl;
+            for (auto k = (*j)->nutrients.begin(); k != (*j)->nutrients.end(); k++)
+            {
+                cout << k->second->value << endl;
+                cout << k->second->unit << endl;
             }
         }
     }
@@ -117,8 +119,9 @@ void LoadData(stringstream& jsonData, unordered_map<string, Food*>& foods)
 int main()
 {
     stringstream jsonData;
-    unordered_map<string, Food*> foods;
-    LoadData(jsonData, foods);
+    string input = "Orange";
+    unordered_map<string, vector<Food*>> foods;
+    LoadData(jsonData, foods, input);
 
     return 0;
 }
