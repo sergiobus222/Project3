@@ -24,19 +24,36 @@ static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* param)
 
 class Food
 {
-    struct Nutrient 
+public:
+    struct Nutrient
     {
         string name;
         float value;
         string unit;
     };
-public:
     string fdcID;
     string name;
     string brand;
     string ingredients;
-    unordered_map<int,Nutrient*> nutrients;
+    unordered_map<string,Nutrient*> nutrients;
+    void insertNutrient(int _ID, string _name, float _value, string _unit);
 };
+
+void Food::insertNutrient(int _ID, string _name, float _value, string _unit)
+{
+    Nutrient* nutrient = new Nutrient;
+    nutrient->name = name;
+    nutrient->value = _value;
+    nutrient->unit = _unit;
+    if (_ID == 1003) nutrients["protein"] = nutrient;
+    else if (_ID == 1004) nutrients["fat"] = nutrient;
+    else if (_ID == 1005) nutrients["carbs"] = nutrient;
+    else if (_ID == 1008) nutrients["calories"] = nutrient;
+    else if (_ID == 2000) nutrients["sugar"] = nutrient;
+    else if (_ID == 1093) nutrients["sodium"] = nutrient;
+    else if (_ID == 1079) nutrients["fiber"] = nutrient;
+    else if (_ID == 1258) nutrients["saturated fat"] = nutrient;
+}
 
 void LoadData(stringstream& jsonData, unordered_map<string, Food*>& foods)
 {
@@ -80,6 +97,19 @@ void LoadData(stringstream& jsonData, unordered_map<string, Food*>& foods)
             food->name = (*it)["description"].asString();
             food->brand = (*it)["brandOwner"].asString();
             food->ingredients = (*it)["ingredients"].asString();
+            food->name.erase(remove(food->name.begin(), food->name.end(), '"'), food->name.end());
+            food->brand.erase(remove(food->brand.begin(), food->brand.end(), '"'), food->brand.end());
+            food->ingredients.erase(remove(food->ingredients.begin(), food->ingredients.end(), '"'), food->ingredients.end());
+            auto nutrients = jsonFile["foodNutrients"];
+            unordered_map<string, Food::Nutrient*>::iterator j;
+            for (auto i = nutrients.begin(); i != nutrients.end(); i++)
+            {
+                food->insertNutrient((*i)["nutrientId"].asInt(), (*i)["nutrientName"].asString(), (*i)["value"].asFloat(), (*i)["unitName"].asString());
+                for (j = food->nutrients.begin(); j != food->nutrients.end(); j++)
+                {
+                    cout << j->second << endl;
+                }
+            }
         }
     }
 }
