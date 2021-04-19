@@ -150,53 +150,48 @@ void merge(vector<Food*>& foodData, int left, int middle, int right, vector<stri
     int rightIndex = 0;
     int mergedIndex = left;
     while (leftIndex < leftSize && rightIndex < rightSize) {
-        if (leftVector.at(leftIndex)->nutrients[names.at(0)]->value < rightVector.at(rightIndex)->nutrients[names.at(0)]->value) 
-        {
-            foodData.at(mergedIndex) = leftVector.at(leftIndex);
-            mergedIndex++;
-            leftIndex++;
-        }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(0)]->value > rightVector.at(rightIndex)->nutrients[names.at(0)]->value)
+        if (leftVector.at(leftIndex)->nutrients[names.at(0)]->value > rightVector.at(rightIndex)->nutrients[names.at(0)]->value) 
         {
             foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            mergedIndex++;
             rightIndex++;
+        }
+        else if (leftVector.at(leftIndex)->nutrients[names.at(0)]->value < rightVector.at(rightIndex)->nutrients[names.at(0)]->value)
+        {
+            foodData.at(mergedIndex) = leftVector.at(leftIndex);
+            leftIndex++;
         }
         else if (leftVector.at(leftIndex)->nutrients[names.at(1)]->value > rightVector.at(rightIndex)->nutrients[names.at(1)]->value) {
             foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            mergedIndex++;
             rightIndex++;
         }
         else if (leftVector.at(leftIndex)->nutrients[names.at(1)]->value < rightVector.at(rightIndex)->nutrients[names.at(1)]->value)
         {
-
             foodData.at(mergedIndex) = leftVector.at(leftIndex);
-            mergedIndex++;
             leftIndex++;
         }
         else if (leftVector.at(leftIndex)->nutrients[names.at(2)]->value > rightVector.at(rightIndex)->nutrients[names.at(2)]->value) {
             foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            mergedIndex++;
             rightIndex++;
         }
         else if (leftVector.at(leftIndex)->nutrients[names.at(2)]->value < rightVector.at(rightIndex)->nutrients[names.at(2)]->value)
         {
-
             foodData.at(mergedIndex) = leftVector.at(leftIndex);
-            mergedIndex++;
             leftIndex++;
         }
         else if (leftVector.at(leftIndex)->nutrients[names.at(3)]->value > rightVector.at(rightIndex)->nutrients[names.at(3)]->value) {
             foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            mergedIndex++;
             rightIndex++;
         }
         else if (leftVector.at(leftIndex)->nutrients[names.at(3)]->value < rightVector.at(rightIndex)->nutrients[names.at(3)]->value)
         {
             foodData.at(mergedIndex) = leftVector.at(leftIndex);
-            mergedIndex++;
             leftIndex++;
         }
+        else {
+            foodData.at(mergedIndex) = rightVector.at(rightIndex);
+            rightIndex++;
+        }
+        mergedIndex++;
     }
     while (leftIndex < leftSize) {
         foodData.at(mergedIndex) = leftVector.at(leftIndex);
@@ -290,16 +285,16 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
 int main()
 {
     stringstream jsonData;
-    string input = "grilled salmon";
+    string input = "salmon";
     unordered_map<string, vector<Food*>> foods;
     auto start = high_resolution_clock::now();
     LoadData(jsonData, foods, input);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
     cout << "Time taken: " << duration.count() << " seconds" << endl;
-    vector<string> names = { "protein", "carbs", "calories", "fat"};
+    vector<string> names = { "carbs", "protein", "calories", "fat"};
     mergeSort(foods[input], 0, foods[input].size()-1, names);
-    for (int i = 0; i < 10; i++)
+    for (int i = foods[input].size()-1; i > foods[input].size() - 9; i--)
     {
         cout << i + 1 << ". " ;
         foods[input].at(i)->printInfo();
