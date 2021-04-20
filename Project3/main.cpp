@@ -292,7 +292,7 @@ int main()
     bool isValid2 = false;
     bool isValid3 = false;
     cout << "Welcome to the Food Index!" << endl;
-    cout << endl;
+    cout << "\n";
     vector<Food*> copy;
     while (cont) {
         cout << "Menu" << endl;
@@ -300,21 +300,21 @@ int main()
         cout << "1: Search for new item" << endl;
         cout << "2: View Shopping List" << endl;
         cout << "3: Exit Program" << endl;
-        cin >> input;
-        cout << endl;
+        getline(cin, inp);
+        input = stoi(inp);
+        cout << "\n";
         switch (input) {
         case 1:
         {
 
             cout << "Please input item name" << endl;
-            getline(cin, inp);
-            food = inp;
-            LoadData(jsonData, foods, inp);
+            getline(cin, food);
+            LoadData(jsonData, foods, food);
             for (int i = 0; i < foods[food].size(); i++)
             {
                 copy.push_back(foods[food].at(i));
             }
-            cout << endl;
+            cout << "\n";
             cout << "Please input the sorting criteria" << endl;
             cout << "--------------------------------------" << endl;
             cout << "1. Protein" << endl << "2. Carbohydrates" << endl << "3. Fat" << endl << "4. Calories" << endl;
