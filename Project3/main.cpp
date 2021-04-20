@@ -278,55 +278,157 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
 int main()
 {
     stringstream jsonData;
-    string input = "daal";
     unordered_map<string, vector<Food*>> foods;
-    LoadData(jsonData, foods, input);
-    string name = "protein";
+    int input;
+    string inp;
+    vector<Food*> shoppingList;
+    string criteria;
+    string food;
+    bool cont = true;
+    bool lth;
+    bool viewList = true;
+    bool isValid = false;
+    bool isValid2 = false;
+    bool isValid3 = false;
+    cout << "Welcome to the Food Index!" << endl;
+    cout << endl;
     vector<Food*> copy;
-    for (int i = 0; i < foods[input].size(); i++)
-    {
-        copy.push_back(foods[input].at(i));
-    }
-    auto start = high_resolution_clock::now();
-    mergeSort(foods[input], 0, foods[input].size()-1, name);
-    auto stop = high_resolution_clock::now();
-    int counter = 1;
-    if (foods[input].size() > 10)
-    {
-        for (int i = foods[input].size() - 1; i > foods[input].size() -1; i--)
-        {
-            cout << counter << ". ";
-            foods[input].at(i)->printInfo();
-            cout << "\n";
-            counter++;
+    while (cont) {
+        cout << "Menu" << endl;
+        cout << "--------------" << endl;
+        cout << "1: Search for new item" << endl;
+        cout << "2: View Shopping List" << endl;
+        cout << "3: Exit Program" << endl;
+        cin >> input;
+        cout << endl;
+        switch (input) {
+        case 1:
+            cout << "Please input item name" << endl;
+            cin >> inp;
+            food = inp;
+            LoadData(jsonData, foods, inp);
+            for (int i = 0; i < foods[food].size(); i++)
+            {
+                copy.push_back(foods[food].at(i));
+            }
+            cout << endl;
+            cout << "Please input the sorting criteria" << endl;
+            cout << "--------------------------------------" << endl;
+            cout << "1. Protein" << endl << "2. Carbohydrates" << endl << "3. Fat" << endl << "4. Calories" << endl;
+            cout << "--------------------------------------" << endl;
+            cin >> input;
+            if (input == 1) {
+                criteria = "protein";
+                isValid3 = true;
+            }
+            if (input == 2) {
+                criteria = "carbs";
+                isValid3 = true;
+            }
+            if (input == 3) {
+                criteria = "fat";
+                isValid3 = true;
+            }
+            if (input == 4) {
+                criteria = "calories";
+                isValid3 = true;
+            }
+            auto start = high_resolution_clock::now();
+            mergeSort(foods[food], 0, foods[food].size() - 1, criteria);
+            auto stop = high_resolution_clock::now();
+            auto mstime = duration_cast<milliseconds>(stop - start);
+            cout << "Time taken: " << mstime.count() << " milliseconds" << endl;
+            cout << endl;
+            cout << "Select 0 for low-high." << endl << "Select 1 for high-low." << endl;
+            start = high_resolution_clock::now();
+            quickSort(copy, 0, copy.size() - 1, criteria);
+            stop = high_resolution_clock::now();
+            auto qstime = duration_cast<milliseconds>(stop - start);
+            copy.clear();
+            cout << "Data sorted!" << endl;
+            cout << "Time taken by merge sort: " << mstime.count() << " milliseconds" << endl;
+            cout << "Time taken by quick sort: " << qstime.count() << " milliseconds" << endl;
+            while (!isValid) {
+                cin >> input;
+                if (input == 0) {
+                    lth = true;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        if (i < foods[food].size())
+                        {
+                            cout << i + 1 << ". ";
+                            foods[food].at(i)->printInfo();
+                            cout << "\n";
+                        }
+                        else break;
+                    }
+                    isValid = true;
+                }
+                else if (input == 1) {
+                    lth = false;
+                    int counter = 1;
+                    for (int i = foods[food].size() - 1; i > foods[food].size() - 11; i--)
+                    {
+                        cout << counter << ". ";
+                        foods[food].at(i)->printInfo();
+                        cout << "\n";
+                        counter++;
+                    }
+                    counter = 1;
+                    isValid = true;
+                }
+                else {
+                    cout << "Invalid input: Please try again" << endl;
+                }
+            }
+            cout << "Input 0 if you would like to return to menu" << endl;
+            cout << "Input item number if you would like to store it to your shopping list" << endl;
+            while (!isValid2) {
+                cin >> input;
+                if (input == 0) {
+                    isValid2 = true;
+                }
+                else if (input >= 1 && input <= 10) 
+                {
+                    if (lth)
+                    {
+                        shoppingList.push_back(foods[food].at(input - 1));
+                    }
+                    else shoppingList.push_back(foods[food].at(foods[food].size() - input));
+                }
+                else {
+                    cout << "Invalid input: Please try again" << endl;
+                }
+            }
+        case 2:
+            while (viewList) {
+                cout << "Shopping List" << endl;
+                for (int i = 0; i < shoppingList.size(); i++) {
+                    cout << i + 1 << ": " << shoppingList[i]->name << endl;
+                }
+                bool valid = false;
+                while (!valid) {
+                    cout << "Select a food by typing in a number" << endl;
+                    cout << "Enter 0 to exit shopping list" << endl;
+                    cin >> input;
+                    if (input < shoppingList.size() + 1) {
+                        if (input == 0) {
+                            viewList = false;
+                            valid = true;
+                        }
+                        else {
+                            shoppingList.at(input - 1)->printInfo();
+                            valid = true;
+                        }
+                    }
+                    else {
+                        cout << "Invalid input: Please try again" << endl;
+                    }
+                }
+            }
+        case 3:
+            cont = false;
         }
-        counter = 1;
     }
-    else
-    {
-        for (int i = foods[input].size() - 1; i >= 0; i--)
-        {
-            cout << counter << ". ";
-            foods[input].at(i)->printInfo();
-            cout << "\n";
-            counter++;
-        }
-        counter = 1;
-    }
-    for (int i = 0; i < 10 && i <foods[input].size() ; i++)
-    {
-        cout << counter << ". ";
-        foods[input].at(i)->printInfo();
-        cout << "\n";
-        counter++;
-    }
-    counter = 1;
-    auto mstime = duration_cast<milliseconds>(stop - start);
-    cout << "Time taken: " << mstime.count() << " milliseconds" << endl;
-    start = high_resolution_clock::now();
-    quickSort(copy, 0, copy.size()-1, name);
-    stop = high_resolution_clock::now();
-    auto qstime = duration_cast<milliseconds>(stop - start);
-    cout << "Time taken: " << qstime.count() << " milliseconds" << endl;
     return 0;
 }
