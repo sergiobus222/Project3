@@ -124,18 +124,18 @@ void Food::printInfo() {
     cout << "Saturated Fat: " << this->nutrients["saturated fat"]->value << " " << this->nutrients["saturated fat"]->unit << endl;
 }
 
-void merge(vector<Food*>& foodData, int left, int middle, int right, vector<string>& names);
+void merge(vector<Food*>& foodData, int left, int middle, int right, string name);
 
-void mergeSort(vector<Food*>& foodData, int left, int right, vector<string> &names) {
+void mergeSort(vector<Food*>& foodData, int left, int right, string name) {
     if (left < right) {
         int middle = left + (right - left) / 2;
-        mergeSort(foodData, left, middle, names);
-        mergeSort(foodData, middle + 1, right, names);
-        merge(foodData, left, middle, right, names);
+        mergeSort(foodData, left, middle, name);
+        mergeSort(foodData, middle + 1, right, name);
+        merge(foodData, left, middle, right, name);
     }
 }
 
-void merge(vector<Food*>& foodData, int left, int middle, int right, vector<string> &names) {
+void merge(vector<Food*>& foodData, int left, int middle, int right, string name) {
     int leftSize = middle - left + 1;
     int rightSize = right - middle;
     vector<Food*> leftVector;
@@ -150,46 +150,15 @@ void merge(vector<Food*>& foodData, int left, int middle, int right, vector<stri
     int rightIndex = 0;
     int mergedIndex = left;
     while (leftIndex < leftSize && rightIndex < rightSize) {
-        if (leftVector.at(leftIndex)->nutrients[names.at(0)]->value > rightVector.at(rightIndex)->nutrients[names.at(0)]->value) 
+        if (leftVector.at(leftIndex)->nutrients[name]->value > rightVector.at(rightIndex)->nutrients[name]->value) 
         {
             foodData.at(mergedIndex) = rightVector.at(rightIndex);
             rightIndex++;
         }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(0)]->value < rightVector.at(rightIndex)->nutrients[names.at(0)]->value)
-        {
-            foodData.at(mergedIndex) = leftVector.at(leftIndex);
-            leftIndex++;
-        }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(1)]->value > rightVector.at(rightIndex)->nutrients[names.at(1)]->value) {
-            foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            rightIndex++;
-        }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(1)]->value < rightVector.at(rightIndex)->nutrients[names.at(1)]->value)
+        else if (leftVector.at(leftIndex)->nutrients[name]->value <= rightVector.at(rightIndex)->nutrients[name]->value)
         {
             foodData.at(mergedIndex) = leftVector.at(leftIndex);
             leftIndex++;
-        }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(2)]->value > rightVector.at(rightIndex)->nutrients[names.at(2)]->value) {
-            foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            rightIndex++;
-        }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(2)]->value < rightVector.at(rightIndex)->nutrients[names.at(2)]->value)
-        {
-            foodData.at(mergedIndex) = leftVector.at(leftIndex);
-            leftIndex++;
-        }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(3)]->value > rightVector.at(rightIndex)->nutrients[names.at(3)]->value) {
-            foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            rightIndex++;
-        }
-        else if (leftVector.at(leftIndex)->nutrients[names.at(3)]->value < rightVector.at(rightIndex)->nutrients[names.at(3)]->value)
-        {
-            foodData.at(mergedIndex) = leftVector.at(leftIndex);
-            leftIndex++;
-        }
-        else {
-            foodData.at(mergedIndex) = rightVector.at(rightIndex);
-            rightIndex++;
         }
         mergedIndex++;
     }
@@ -205,13 +174,39 @@ void merge(vector<Food*>& foodData, int left, int middle, int right, vector<stri
     }
 }
 
+void swap(Food* a, Food* b) {
+    Food* t = a;
+    a = b;
+    b = t;
+}
+
+float partition(vector<Food*>& foodVect, int low, int high, string name) {
+    int pivot = foodVect[high]->nutrients[name]->value;
+    int i = (low - 1);
+    for (float j = low; j <= high - 1; j++) {
+        if (foodVect[j]->nutrients[name]->value < pivot) {
+            i++;
+            swap(foodVect[i], foodVect[j]);
+        }
+    }
+    swap(foodVect[i + 1], foodVect[high]);
+    return (i + 1);
+}
+
+void quickSort(vector<Food*>& foodVect, int low, int high, string name) {
+    if (low < high) {
+        int pi = partition(foodVect, low, high, name);
+        quickSort(foodVect, low, pi - 1, name);
+        quickSort(foodVect, pi + 1, high, name);
+    }
+}
+
 void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foods, string input)
 {
     CURL* curl;
     CURLcode result;
     int currentPage = 1;
     int totalPages = 0;
-    int maxPages = 10;
     int code(0);
     curl_global_init(CURL_GLOBAL_DEFAULT);
     string inputURL;
@@ -226,7 +221,7 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
     }
     string inputEnd = "%22&dataType=Branded&pageSize=1000&pageNumber=";
     inputURL = inputURL + inputEnd;
-    while (currentPage != totalPages && currentPage <= maxPages)
+    while (currentPage != totalPages)
     {
         inputURL += to_string(currentPage);
         curl = curl_easy_init();
@@ -253,9 +248,7 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
         if (Json::parseFromStream(reader, jsonData, &jsonFile, &s))
         {
             cout << "Total Hits: " << jsonFile["totalHits"] << std::endl;
-            cout << "Current Page: " << jsonFile["currentPage"] << std::endl;
             totalPages = jsonFile["totalPages"].asInt() + 1;
-            cout << "Total Pages: " << totalPages <<endl;
             auto foods = jsonFile["foods"];
             for (auto it = foods.begin(); it != foods.end(); it++)
             {
@@ -285,20 +278,55 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
 int main()
 {
     stringstream jsonData;
-    string input = "salmon";
+    string input = "daal";
     unordered_map<string, vector<Food*>> foods;
-    auto start = high_resolution_clock::now();
     LoadData(jsonData, foods, input);
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(stop - start);
-    cout << "Time taken: " << duration.count() << " seconds" << endl;
-    vector<string> names = { "carbs", "protein", "calories", "fat"};
-    mergeSort(foods[input], 0, foods[input].size()-1, names);
-    for (int i = foods[input].size()-1; i > foods[input].size() - 9; i--)
+    string name = "protein";
+    vector<Food*> copy;
+    for (int i = 0; i < foods[input].size(); i++)
     {
-        cout << i + 1 << ". " ;
+        copy.push_back(foods[input].at(i));
+    }
+    auto start = high_resolution_clock::now();
+    mergeSort(foods[input], 0, foods[input].size()-1, name);
+    auto stop = high_resolution_clock::now();
+    int counter = 1;
+    if (foods[input].size() > 10)
+    {
+        for (int i = foods[input].size() - 1; i > foods[input].size() -1; i--)
+        {
+            cout << counter << ". ";
+            foods[input].at(i)->printInfo();
+            cout << "\n";
+            counter++;
+        }
+        counter = 1;
+    }
+    else
+    {
+        for (int i = foods[input].size() - 1; i >= 0; i--)
+        {
+            cout << counter << ". ";
+            foods[input].at(i)->printInfo();
+            cout << "\n";
+            counter++;
+        }
+        counter = 1;
+    }
+    for (int i = 0; i < 10 && i <foods[input].size() ; i++)
+    {
+        cout << counter << ". ";
         foods[input].at(i)->printInfo();
         cout << "\n";
+        counter++;
     }
+    counter = 1;
+    auto mstime = duration_cast<milliseconds>(stop - start);
+    cout << "Time taken: " << mstime.count() << " milliseconds" << endl;
+    start = high_resolution_clock::now();
+    quickSort(copy, 0, copy.size()-1, name);
+    stop = high_resolution_clock::now();
+    auto qstime = duration_cast<milliseconds>(stop - start);
+    cout << "Time taken: " << qstime.count() << " milliseconds" << endl;
     return 0;
 }
