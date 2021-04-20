@@ -303,6 +303,8 @@ int main()
         cout << endl;
         switch (input) {
         case 1:
+        {
+
             cout << "Please input item name" << endl;
             cin >> inp;
             food = inp;
@@ -337,9 +339,6 @@ int main()
             mergeSort(foods[food], 0, foods[food].size() - 1, criteria);
             auto stop = high_resolution_clock::now();
             auto mstime = duration_cast<milliseconds>(stop - start);
-            cout << "Time taken: " << mstime.count() << " milliseconds" << endl;
-            cout << endl;
-            cout << "Select 0 for low-high." << endl << "Select 1 for high-low." << endl;
             start = high_resolution_clock::now();
             quickSort(copy, 0, copy.size() - 1, criteria);
             stop = high_resolution_clock::now();
@@ -348,6 +347,7 @@ int main()
             cout << "Data sorted!" << endl;
             cout << "Time taken by merge sort: " << mstime.count() << " milliseconds" << endl;
             cout << "Time taken by quick sort: " << qstime.count() << " milliseconds" << endl;
+            cout << "Select 0 for low-high." << endl << "Select 1 for high-low." << endl;
             while (!isValid) {
                 cin >> input;
                 if (input == 0) {
@@ -388,7 +388,7 @@ int main()
                 if (input == 0) {
                     isValid2 = true;
                 }
-                else if (input >= 1 && input <= 10) 
+                else if (input >= 1 && input <= 10)
                 {
                     if (lth)
                     {
@@ -400,7 +400,9 @@ int main()
                     cout << "Invalid input: Please try again" << endl;
                 }
             }
+        }
         case 2:
+        {
             while (viewList) {
                 cout << "Shopping List" << endl;
                 for (int i = 0; i < shoppingList.size(); i++) {
@@ -426,8 +428,11 @@ int main()
                     }
                 }
             }
+        }
         case 3:
+        {
             cont = false;
+        }
         }
     }
     return 0;
