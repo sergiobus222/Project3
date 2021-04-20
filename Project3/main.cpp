@@ -288,9 +288,6 @@ int main()
     bool cont = true;
     bool lth;
     bool viewList = true;
-    bool isValid = false;
-    bool isValid2 = false;
-    bool isValid3 = false;
     cout << "Welcome to the Food Index!" << endl;
     cout << "\n";
     vector<Food*> copy;
@@ -303,8 +300,7 @@ int main()
         getline(cin, inp);
         input = stoi(inp);
         cout << "\n";
-        switch (input) {
-        case 1:
+        if(input == 1)
         {
 
             cout << "Please input item name" << endl;
@@ -319,22 +315,19 @@ int main()
             cout << "--------------------------------------" << endl;
             cout << "1. Protein" << endl << "2. Carbohydrates" << endl << "3. Fat" << endl << "4. Calories" << endl;
             cout << "--------------------------------------" << endl;
-            cin >> input;
+            getline(cin,inp);
+            input = stoi(inp);
             if (input == 1) {
                 criteria = "protein";
-                isValid3 = true;
             }
             if (input == 2) {
                 criteria = "carbs";
-                isValid3 = true;
             }
             if (input == 3) {
                 criteria = "fat";
-                isValid3 = true;
             }
             if (input == 4) {
                 criteria = "calories";
-                isValid3 = true;
             }
             auto start = high_resolution_clock::now();
             mergeSort(foods[food], 0, foods[food].size() - 1, criteria);
@@ -349,8 +342,10 @@ int main()
             cout << "Time taken by merge sort: " << mstime.count() << " milliseconds" << endl;
             cout << "Time taken by quick sort: " << qstime.count() << " milliseconds" << endl;
             cout << "Select 0 for low-high." << endl << "Select 1 for high-low." << endl;
+            bool isValid = false;
             while (!isValid) {
-                cin >> input;
+                getline(cin, inp);
+                input = stoi(inp);
                 if (input == 0) {
                     lth = true;
                     for (int i = 0; i < 10; i++)
@@ -384,10 +379,13 @@ int main()
             }
             cout << "Input 0 if you would like to return to menu" << endl;
             cout << "Input item number if you would like to store it to your shopping list" << endl;
+            bool isValid2 = false;
             while (!isValid2) {
-                cin >> input;
+                getline(cin, inp);
+                input = stoi(inp);
                 if (input == 0) {
                     isValid2 = true;
+                    break;
                 }
                 else if (input >= 1 && input <= 10)
                 {
@@ -402,7 +400,7 @@ int main()
                 }
             }
         }
-        case 2:
+        else if(input == 2)
         {
             while (viewList) {
                 cout << "Shopping List" << endl;
@@ -413,7 +411,8 @@ int main()
                 while (!valid) {
                     cout << "Select a food by typing in a number" << endl;
                     cout << "Enter 0 to exit shopping list" << endl;
-                    cin >> input;
+                    getline(cin, inp);
+                    input = stoi(inp);
                     if (input < shoppingList.size() + 1) {
                         if (input == 0) {
                             viewList = false;
@@ -430,10 +429,9 @@ int main()
                 }
             }
         }
-        case 3:
+        else
         {
             cont = false;
-        }
         }
     }
     return 0;
