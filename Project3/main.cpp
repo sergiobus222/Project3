@@ -106,6 +106,7 @@ void Food::insertNutrient(int _ID, string _name, float _value, string _unit)
         nutrients["saturated fat"]->value = _value;
         nutrients["saturated fat"]->unit = _unit;
     }
+    else return;
 }
 
 void Food::printInfo() {
@@ -306,7 +307,7 @@ int main()
         {
 
             cout << "Please input item name" << endl;
-            cin >> inp;
+            getline(cin, inp);
             food = inp;
             LoadData(jsonData, foods, inp);
             for (int i = 0; i < foods[food].size(); i++)
