@@ -1,8 +1,10 @@
-//https://www.devdungeon.com/content/curl-tutorial
+//Sources used
+//https://urldefense.proofpoint.com/v2/url?u=https-3A__www.devdungeon.com_content_curl-2Dtutorial&d=DwIGAg&c=sJ6xIWYx-zLMB3EPkvcnVg&r=cC4331qrTciUCjZOZ3vZYh-LCfXZnME31l1KMo-6804&m=jEKzMFYywJjrmRKFIAZdKIPm8a-XTYy8FdGIiO9eOCA&s=U9PoyBn771bJtk1Fhn-BpR7M7p-Yg3m4DYhPdlo7qMk&e= 
 //API_KEY: NqBR3T4rTRFVvTE0DkvasKs6b63RwqQDaFAUeTh5
-//https://curl.se/libcurl/c/ftpgetresp.html
-//http://www.cplusplus.com/forum/unices/45878/
-//https://stackoverflow.com/questions/47257198/parsing-issue-warning-with-json
+//https://urldefense.proofpoint.com/v2/url?u=https-3A__curl.se_libcurl_c_ftpgetresp.html&d=DwIGAg&c=sJ6xIWYx-zLMB3EPkvcnVg&r=cC4331qrTciUCjZOZ3vZYh-LCfXZnME31l1KMo-6804&m=jEKzMFYywJjrmRKFIAZdKIPm8a-XTYy8FdGIiO9eOCA&s=9E5_muu3rom9exg65q_uUa5DQ3m1UL8BAhgEb1kOvxw&e= 
+//https://urldefense.proofpoint.com/v2/url?u=http-3A__www.cplusplus.com_forum_unices_45878_&d=DwIGAg&c=sJ6xIWYx-zLMB3EPkvcnVg&r=cC4331qrTciUCjZOZ3vZYh-LCfXZnME31l1KMo-6804&m=jEKzMFYywJjrmRKFIAZdKIPm8a-XTYy8FdGIiO9eOCA&s=0I7gBMOi4vqlSw-Ois4B8dRv7FTYWLvOFKkRl3L7Lp4&e= 
+//https://urldefense.proofpoint.com/v2/url?u=https-3A__stackoverflow.com_questions_47257198_parsing-2Dissue-2Dwarning-2Dwith-2Djson&d=DwIGAg&c=sJ6xIWYx-zLMB3EPkvcnVg&r=cC4331qrTciUCjZOZ3vZYh-LCfXZnME31l1KMo-6804&m=jEKzMFYywJjrmRKFIAZdKIPm8a-XTYy8FdGIiO9eOCA&s=bhC9vVvgElJkVblAxOKgYIAzfP3U2QmZ1p_PCYzaUOU&e= 
+//https://urldefense.proofpoint.com/v2/url?u=https-3A__fdc.nal.usda.gov_index.html&d=DwIGAg&c=sJ6xIWYx-zLMB3EPkvcnVg&r=cC4331qrTciUCjZOZ3vZYh-LCfXZnME31l1KMo-6804&m=jEKzMFYywJjrmRKFIAZdKIPm8a-XTYy8FdGIiO9eOCA&s=eCw9sAlOLNiUxWvoYEtUsBJzqoeXXvlRGBIL2OyWTR4&e= 
 #define CURL_STATICLIB
 #include <iostream>
 #include <string>
@@ -182,9 +184,9 @@ void swap(Food* a, Food* b) {
 }
 
 float partition(vector<Food*>& foodVect, int low, int high, string name) {
-    int pivot = foodVect[high]->nutrients[name]->value;
+    float pivot = foodVect[high]->nutrients[name]->value;
     int i = (low - 1);
-    for (float j = low; j <= high - 1; j++) {
+    for (int j = low; j <= high - 1; j++) {
         if (foodVect[j]->nutrients[name]->value < pivot) {
             i++;
             swap(foodVect[i], foodVect[j]);
@@ -209,6 +211,7 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
     int currentPage = 1;
     int totalPages = 0;
     int code(0);
+    bool total = true;
     curl_global_init(CURL_GLOBAL_DEFAULT);
     string inputURL;
     inputURL = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=NqBR3T4rTRFVvTE0DkvasKs6b63RwqQDaFAUeTh5&query=%22";
@@ -248,7 +251,10 @@ void LoadData(stringstream& jsonData, unordered_map<string, vector<Food*>>& _foo
         string s;
         if (Json::parseFromStream(reader, jsonData, &jsonFile, &s))
         {
-            cout << "Total Hits: " << jsonFile["totalHits"] << std::endl;
+            if (total) {
+                cout << "Total Hits: " << jsonFile["totalHits"] << std::endl;
+                total = false;
+            }
             totalPages = jsonFile["totalPages"].asInt() + 1;
             auto foods = jsonFile["foods"];
             for (auto it = foods.begin(); it != foods.end(); it++)
@@ -287,7 +293,6 @@ int main()
     string food;
     bool cont = true;
     bool lth;
-    bool viewList = true;
     cout << "Welcome to the Food Index!" << endl;
     cout << "\n";
     vector<Food*> copy;
@@ -300,12 +305,14 @@ int main()
         getline(cin, inp);
         input = stoi(inp);
         cout << "\n";
-        if(input == 1)
+        if (input == 1)
         {
 
             cout << "Please input item name" << endl;
             getline(cin, food);
-            LoadData(jsonData, foods, food);
+            if (foods.find(food) == foods.end()) {
+                LoadData(jsonData, foods, food);
+            }
             for (int i = 0; i < foods[food].size(); i++)
             {
                 copy.push_back(foods[food].at(i));
@@ -315,19 +322,29 @@ int main()
             cout << "--------------------------------------" << endl;
             cout << "1. Protein" << endl << "2. Carbohydrates" << endl << "3. Fat" << endl << "4. Calories" << endl;
             cout << "--------------------------------------" << endl;
-            getline(cin,inp);
-            input = stoi(inp);
-            if (input == 1) {
-                criteria = "protein";
-            }
-            if (input == 2) {
-                criteria = "carbs";
-            }
-            if (input == 3) {
-                criteria = "fat";
-            }
-            if (input == 4) {
-                criteria = "calories";
+            bool isValid3 = false;
+            while (!isValid3) {
+                getline(cin, inp);
+                input = stoi(inp);
+                if (input == 1) {
+                    criteria = "protein";
+                    isValid3 = true;
+                }
+                else if (input == 2) {
+                    criteria = "carbs";
+                    isValid3 = true;
+                }
+                else if (input == 3) {
+                    criteria = "fat";
+                    isValid3 = true;
+                }
+                else if (input == 4) {
+                    criteria = "calories";
+                    isValid3 = true;
+                }
+                else {
+                    cout << "Invalid input: Please try again" << endl;
+                }
             }
             auto start = high_resolution_clock::now();
             mergeSort(foods[food], 0, foods[food].size() - 1, criteria);
@@ -339,8 +356,17 @@ int main()
             auto qstime = duration_cast<milliseconds>(stop - start);
             copy.clear();
             cout << "Data sorted!" << endl;
-            cout << "Time taken by merge sort: " << mstime.count() << " milliseconds" << endl;
-            cout << "Time taken by quick sort: " << qstime.count() << " milliseconds" << endl;
+            if (mstime.count() < 1 || qstime.count() < 1) {
+                auto mstimeMS = duration_cast<microseconds>(stop - start);
+                auto qstimeMS = duration_cast<microseconds>(stop - start);
+                cout << "Time taken by merge sort: " << mstimeMS.count() << " microseconds" << endl;
+                cout << "Time taken by quick sort: " << qstimeMS.count() << " microseconds" << endl;
+            }
+            else {
+                cout << "Time taken by merge sort: " << mstime.count() << " milliseconds" << endl;
+                cout << "Time taken by quick sort: " << qstime.count() << " milliseconds" << endl;
+            }
+
             cout << "Select 0 for low-high." << endl << "Select 1 for high-low." << endl;
             bool isValid = false;
             while (!isValid) {
@@ -356,15 +382,17 @@ int main()
                             foods[food].at(i)->printInfo();
                             cout << "\n";
                         }
-                        else break;
                     }
                     isValid = true;
                 }
                 else if (input == 1) {
                     lth = false;
                     int counter = 1;
-                    for (int i = foods[food].size() - 1; i > foods[food].size() - 11; i--)
+                    for (int i = foods[food].size() - 1; i >= 0; i--)
                     {
+                        if (counter > 10) {
+                            break;
+                        }
                         cout << counter << ". ";
                         foods[food].at(i)->printInfo();
                         cout << "\n";
@@ -400,8 +428,9 @@ int main()
                 }
             }
         }
-        else if(input == 2)
+        else if (input == 2)
         {
+            bool viewList = true;
             while (viewList) {
                 cout << "Shopping List" << endl;
                 for (int i = 0; i < shoppingList.size(); i++) {
@@ -421,6 +450,7 @@ int main()
                         else {
                             shoppingList.at(input - 1)->printInfo();
                             valid = true;
+                            cout << "\n";
                         }
                     }
                     else {
@@ -429,9 +459,13 @@ int main()
                 }
             }
         }
-        else
+        else if (input == 3)
         {
             cont = false;
+        }
+        else {
+            cout << "Invalid input: Please try again" << endl;
+            cout << "\n";
         }
     }
     return 0;
